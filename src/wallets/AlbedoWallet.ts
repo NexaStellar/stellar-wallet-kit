@@ -1,4 +1,5 @@
 import { BaseWallet } from '../core/BaseWallet';
+import { errorMessage } from '../core/errors';
 import { WalletConfig } from '../core/types';
 
 declare global {
@@ -22,7 +23,7 @@ export class AlbedoWallet extends BaseWallet {
       this.publicKey = result.pubkey;
       this.connected = true;
     } catch (error) {
-      throw new Error('Failed to connect to Albedo: ' + (error as Error).message);
+      throw new Error(`Failed to connect to Albedo: ${errorMessage(error)}`, { cause: error });
     }
   }
 
@@ -55,7 +56,7 @@ export class AlbedoWallet extends BaseWallet {
       });
       return result.signed_envelope_xdr;
     } catch (error) {
-      throw new Error('Transaction signing failed: ' + (error as Error).message);
+      throw new Error(`Transaction signing failed: ${errorMessage(error)}`, { cause: error });
     }
   }
 

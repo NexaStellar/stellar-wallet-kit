@@ -25,20 +25,18 @@
     <main id="main-content">
       <section id="status">
         <h2>Implementation status</h2>
-        <div class="callout warning"><strong>Prototype: verify package completeness before adopting.</strong> The checked-in implementation contains the core class and browser adapters for Freighter, Albedo, and Rabet. WalletConnect is a placeholder that throws “implementation pending.” React providers/hooks, UI components, and test utilities mentioned in the repository README are not present in the current source tree.</div>
-        <p>This documentation describes the actual <code>src/core</code> and <code>src/wallets</code> implementation. The package manifest declares additional export paths; check that a published build includes those modules before importing them. There is no guarantee that every listed wallet enum has an implemented adapter.</p>
+        <div class="callout warning"><strong>Early-stage, unaudited prototype.</strong> The checked-in implementation includes browser adapters for Freighter, Albedo, Rabet, and xBull. WalletConnect remains unimplemented and is reported unavailable. React providers/hooks, UI components, and test utility adapters are not included.</div>
+        <p>The package root exports the implemented core API and browser adapters. Do not rely on planned integrations as implemented capabilities.</p>
       </section>
       <section id="install">
         <h2>Install and project setup</h2>
-        <p>The package is named <code>@nexastellar/wallet-kit</code>. Its manifest currently specifies Stellar SDK and WalletConnect dependencies, and React as optional peer dependencies.</p>
+        <p>The package is named <code>@nexastellar/wallet-kit</code> and depends on the Stellar SDK. It does not require React or WalletConnect.</p>
         <pre><code>npm install @nexastellar/wallet-kit @stellar/stellar-sdk</code></pre>
         <p>Initialize the kit in a browser application. Wallet connections access browser-injected providers and browser local storage, so run connection code in a client-side context rather than during server-side rendering.</p>
       </section>
       <section id="quickstart">
         <h2>Quick start</h2>
-        <pre><code>// In this repository checkout:
-import { WalletKit } from './src/core/WalletKit';
-import { WalletType } from './src/core/types';
+        <pre><code>import { WalletKit, WalletType } from '@nexastellar/wallet-kit';
 
 const kit = new WalletKit({
   network: 'testnet',
@@ -53,20 +51,20 @@ const wallet = await kit.connect(WalletType.FREIGHTER);
 console.log('Public key:', wallet.getPublicKey());
 
 const signedXdr = await kit.signTransaction(unsignedTransaction.toXDR());
-// Submit using your chosen Horizon or Soroban RPC flow.
-// The kit's submitTransaction method submits to Horizon.</code></pre>
-        <p><code>unsignedTransaction</code> is an application-built Stellar SDK transaction; this kit does not construct transactions. The example uses checkout-relative source imports. The package root entrypoint is not included in the current source tree, so these imports are not a supported published-package path until package exports are completed and verified.</p>
+// The kit submits the signed XDR to Horizon.
+const result = await kit.submitTransaction(signedXdr);</code></pre>
+        <p><code>unsignedTransaction</code> is an application-built Stellar SDK transaction; this kit does not construct transactions. The package root is built from <code>src/index.ts</code>.</p>
         <p><code>connect</code> returns the adapter instance. It exposes <code>getPublicKey()</code>, <code>getNetwork()</code>, and <code>signTransaction(xdr)</code>.</p>
       </section>
       <section id="config">
         <h2>Configuration</h2>
         <div class="table-wrap"><table><thead><tr><th>Option</th><th>Type</th><th>Behavior</th></tr></thead><tbody>
           <tr><td><code>network</code></td><td><code>'mainnet' | 'testnet'</code></td><td>Required. Selects the network passphrase and default Horizon/Soroban URLs.</td></tr>
-          <tr><td><code>projectName</code></td><td><code>string</code></td><td>Required. Used in WalletConnect metadata.</td></tr>
-          <tr><td><code>projectIcon</code>, <code>projectUrl</code></td><td><code>string</code> (optional)</td><td>WalletConnect metadata fields; default to empty strings.</td></tr>
+          <tr><td><code>projectName</code></td><td><code>string</code></td><td>Required application name.</td></tr>
+          <tr><td><code>projectIcon</code>, <code>projectUrl</code></td><td><code>string</code> (optional)</td><td>Stored as app metadata; currently not consumed by an implemented adapter.</td></tr>
           <tr><td><code>autoConnect</code></td><td><code>boolean</code></td><td>Defaults to <code>true</code>. Attempts to restore a saved provider choice in a browser.</td></tr>
           <tr><td><code>autoApprove</code></td><td><code>boolean</code></td><td>Defaults to <code>false</code>; currently stored but not used by the adapters.</td></tr>
-          <tr><td><code>walletConnectProjectId</code></td><td><code>string</code></td><td>Optional config value, but WalletConnect connect/sign functionality is not implemented.</td></tr>
+          <tr><td><code>walletConnectProjectId</code></td><td><code>string</code></td><td>Reserved configuration; WalletConnect is not implemented and is reported unavailable.</td></tr>
           <tr><td><code>horizonUrl</code>, <code>sorobanRpcUrl</code></td><td><code>string</code></td><td>Optional endpoint overrides. Horizon is used by account loading and transaction submission; Soroban RPC URL is not currently used for requests.</td></tr>
         </tbody></table></div>
         <p>Defaults are <code>https://horizon.stellar.org</code> and <code>https://horizon-testnet.stellar.org</code>, and the analogous Soroban RPC URLs. <code>switchNetwork</code> resets endpoints to defaults; it does not preserve custom endpoint overrides.</p>
@@ -86,7 +84,7 @@ const signedXdr = await kit.signTransaction(unsignedTransaction.toXDR());
           <tr><td><code>getNetwork()</code>, <code>getNetworkPassphrase()</code>, <code>switchNetwork(network)</code></td><td>Read/switch network context. Switching disconnects the current adapter.</td></tr>
           <tr><td><code>on(event, callback)</code>, <code>off(event, callback)</code></td><td>Register or remove callbacks for the event names listed below.</td></tr>
         </tbody></table></div>
-        <p>Although a few declarations in the README differ, the current class is the source of truth. It does not expose a <code>useWallet</code> hook, balance hook, transaction hook, or built-in transaction builder.</p>
+        <p>The class does not expose a <code>useWallet</code> hook, balance hook, transaction hook, or built-in transaction builder.</p>
       </section>
       <section id="wallets">
         <h2>Wallet adapter support</h2>
@@ -94,8 +92,8 @@ const signedXdr = await kit.signTransaction(unsignedTransaction.toXDR());
           <tr><td>Freighter</td><td><code>window.freighter</code> exists</td><td>Connect, transaction signing, and auth-entry signing through the injected provider.</td></tr>
           <tr><td>Albedo</td><td><code>window.albedo</code> exists</td><td>Public-key connection and transaction signing. Auth-entry signing throws unsupported.</td></tr>
           <tr><td>Rabet</td><td><code>window.rabet</code> exists</td><td>Connect, transaction signing, and auth-entry signing through the injected provider.</td></tr>
-          <tr><td>WalletConnect</td><td>Always reports available</td><td>Placeholder; connect and signing methods throw “implementation pending.”</td></tr>
-          <tr><td>xBull</td><td>Enum value exists</td><td>No adapter implementation is selected by the current factory; it is not supported.</td></tr>
+          <tr><td>WalletConnect</td><td>Always reports unavailable</td><td>Not implemented; connection and signing are unsupported.</td></tr>
+          <tr><td>xBull</td><td><code>window.xBullSDK</code> or <code>window.xbull</code> exists</td><td>Connect, transaction signing, and provider-dependent auth-entry signing.</td></tr>
         </tbody></table></div>
         <p>Provider APIs and browser extension versions can change. Test the exact adapter/provider combination your application supports. Do not infer support just from a wallet name in an enum or earlier README feature list.</p>
       </section>
@@ -111,7 +109,7 @@ kit.off('transactionSuccess', onSuccess);</code></pre>
       </section>
       <section id="errors">
         <h2>Errors and safety</h2>
-        <ul><li>Check <code>isWalletAvailable</code>, then catch provider connection errors (for example, user rejection or a missing extension).</li><li>Never treat wallet availability as proof that a wallet is connected; call <code>isConnected()</code>.</li><li>Review transaction XDR, network, destination, amount, and fees before requesting a signature. A signature authorizes the transaction; this library does not validate application intent.</li><li>Handle Horizon submission failures explicitly. A successful signature does not mean that a transaction was accepted by the network.</li><li>Do not use the incomplete WalletConnect adapter or unsupported UI/React imports in production.</li></ul>
+        <ul><li>Check <code>isWalletAvailable</code>, then catch provider connection errors (for example, user rejection or a missing extension).</li><li>Never treat wallet availability as proof that a wallet is connected; call <code>isConnected()</code>.</li><li>Review transaction XDR, network, destination, amount, and fees before requesting a signature. A signature authorizes the transaction; this library does not validate application intent.</li><li>Handle Horizon submission failures explicitly. A successful signature does not mean that a transaction was accepted by the network.</li><li>WalletConnect, React hooks, UI components, and testing adapters are not implemented.</li></ul>
       </section>
       <section id="development">
         <h2>Development and contributions</h2>
@@ -119,7 +117,7 @@ kit.off('transactionSuccess', onSuccess);</code></pre>
 npm run typecheck
 npm test
 npm run build</code></pre>
-        <p>Scripts are declared in <code>package.json</code>; dependency installation may be needed first. The checkout currently has no React integration source, UI source, or testing adapter despite package export declarations and README examples. Pull requests should keep docs aligned with the actual code and add focused tests for adapter behavior.</p>
+        <p>CI runs lint, type checking, tests, and a package build on Node.js 22 and 24. Pull requests should keep docs aligned with the actual code and add focused tests for adapter behavior.</p>
         <p>See the <a href="https://github.com/NexaStellar/stellar-wallet-kit">source repository</a> and <a href="https://github.com/NexaStellar/stellar-wallet-kit/issues">open issues</a>.</p>
       </section>
     </main>

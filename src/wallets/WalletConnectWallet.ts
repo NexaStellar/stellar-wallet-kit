@@ -12,18 +12,12 @@ interface WalletConnectConfig extends WalletConfig {
 }
 
 export class WalletConnectWallet extends BaseWallet {
-  protected wcConfig: WalletConnectConfig;
-  protected client: any;
-
   constructor(config: WalletConnectConfig) {
     super(config);
-    this.wcConfig = config;
   }
 
   async connect(): Promise<void> {
-    // WalletConnect implementation would go here
-    // This is a placeholder for the actual implementation
-    throw new Error('WalletConnect implementation pending');
+    throw new Error('WalletConnect support is not implemented');
   }
 
   async disconnect(): Promise<void> {
@@ -32,7 +26,7 @@ export class WalletConnectWallet extends BaseWallet {
   }
 
   isAvailable(): boolean {
-    return true; // WalletConnect is always available
+    return false;
   }
 
   getName(): string {
@@ -44,10 +38,10 @@ export class WalletConnectWallet extends BaseWallet {
   }
 
   async signTransaction(_xdr: string): Promise<string> {
-    throw new Error('WalletConnect implementation pending');
+    throw new Error('WalletConnect support is not implemented');
   }
 
   async signAuthEntry(_entry: string): Promise<string> {
-    throw new Error('WalletConnect implementation pending');
+    throw new Error('WalletConnect support is not implemented');
   }
 }
