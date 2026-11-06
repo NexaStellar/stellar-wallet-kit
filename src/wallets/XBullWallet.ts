@@ -1,4 +1,5 @@
 import { BaseWallet } from '../core/BaseWallet';
+import { errorMessage } from '../core/errors';
 import { WalletConfig } from '../core/types';
 
 declare global {
@@ -65,7 +66,7 @@ export class XBullWallet extends BaseWallet {
     } catch (error) {
       this.publicKey = null;
       this.connected = false;
-      throw new Error('Failed to connect to xBull: ' + (error as Error).message);
+      throw new Error(`Failed to connect to xBull: ${errorMessage(error)}`, { cause: error });
     }
   }
 
@@ -127,7 +128,7 @@ export class XBullWallet extends BaseWallet {
       }
       return result;
     } catch (error) {
-      throw new Error('Transaction signing failed: ' + (error as Error).message);
+      throw new Error(`Transaction signing failed: ${errorMessage(error)}`, { cause: error });
     }
   }
 
@@ -156,7 +157,7 @@ export class XBullWallet extends BaseWallet {
       }
       return result;
     } catch (error) {
-      throw new Error('Auth entry signing failed: ' + (error as Error).message);
+      throw new Error(`Auth entry signing failed: ${errorMessage(error)}`, { cause: error });
     }
   }
 }

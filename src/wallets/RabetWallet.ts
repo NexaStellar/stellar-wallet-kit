@@ -1,4 +1,5 @@
 import { BaseWallet } from '../core/BaseWallet';
+import { errorMessage } from '../core/errors';
 import { WalletConfig } from '../core/types';
 
 declare global {
@@ -22,7 +23,7 @@ export class RabetWallet extends BaseWallet {
       this.publicKey = result.publicKey;
       this.connected = true;
     } catch (error) {
-      throw new Error('Failed to connect to Rabet: ' + (error as Error).message);
+      throw new Error(`Failed to connect to Rabet: ${errorMessage(error)}`, { cause: error });
     }
   }
 
@@ -52,7 +53,7 @@ export class RabetWallet extends BaseWallet {
       const result = await window.rabet.sign(xdr, this.config.network);
       return result.xdr;
     } catch (error) {
-      throw new Error('Transaction signing failed: ' + (error as Error).message);
+      throw new Error(`Transaction signing failed: ${errorMessage(error)}`, { cause: error });
     }
   }
 
@@ -65,7 +66,7 @@ export class RabetWallet extends BaseWallet {
       const result = await window.rabet.signAuthEntry(entry);
       return result;
     } catch (error) {
-      throw new Error('Auth entry signing failed: ' + (error as Error).message);
+      throw new Error(`Auth entry signing failed: ${errorMessage(error)}`, { cause: error });
     }
   }
 }

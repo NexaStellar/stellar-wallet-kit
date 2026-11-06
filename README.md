@@ -1,399 +1,85 @@
 # Stellar Wallet Kit
 
-[![npm version](https://badge.fury.io/js/%40nexastellar%2Fwallet-kit.svg)](https://www.npmjs.com/package/@nexastellar/wallet-kit)
+[![CI](https://github.com/NexaStellar/stellar-wallet-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/NexaStellar/stellar-wallet-kit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
 
-A modern, type-safe TypeScript library for seamlessly integrating Stellar wallets into web applications. Supports Freighter, Albedo, Rabet, and WalletConnect with a unified API.
+A TypeScript library for connecting browser-injected Stellar wallets and signing transaction XDR. The project is an early-stage, unaudited prototype; verify wallet-provider behavior and transaction details before use.
 
-## ✨ Features
+## 📚 Documentation
 
-- **🔌 Multi-Wallet Support**: Freighter, Albedo, Rabet, xBull, WalletConnect
-- **🎯 Unified API**: Single interface for all wallet interactions
-- **⚡ React Hooks**: Pre-built hooks for React applications
-- **🔐 Type-Safe**: Full TypeScript support with comprehensive types
-- **📦 Tree-Shakeable**: Import only what you need
-- **🎨 UI Components**: Optional pre-styled wallet selection modal
-- **🔄 Auto-Connect**: Remember user's wallet preference
-- **📱 Mobile Friendly**: WalletConnect support for mobile wallets
-- **🧪 Test Utilities**: Mock wallets for testing
+The [Stellar Wallet Kit documentation site](https://nexastellar.github.io/stellar-wallet-kit/) includes setup guidance, implementation status, supported adapters, API behavior, and development instructions.
 
-## 📦 Installation
+## Current capabilities
+
+- One `WalletKit` API for Freighter, Albedo, Rabet, and xBull browser extensions.
+- Connect/disconnect, transaction signing, and Soroban authorization-entry signing where a provider supports it.
+- Horizon account loading and transaction submission.
+- Optional restoration of the previously selected browser wallet.
+
+**WalletConnect is not implemented and is reported unavailable.** React hooks, UI components, and mock/testing adapters are not included. Do not rely on older examples that describe those planned features.
+
+## Install
 
 ```bash
-# npm
 npm install @nexastellar/wallet-kit
-
-# yarn
-yarn add @nexastellar/wallet-kit
-
-# pnpm
-pnpm add @nexastellar/wallet-kit
 ```
 
-## 🚀 Quick Start
-
-### Vanilla TypeScript/JavaScript
+## Quick start
 
 ```typescript
 import { WalletKit, WalletType } from '@nexastellar/wallet-kit';
 
-// Initialize the wallet kit
-const walletKit = new WalletKit({
+const kit = new WalletKit({
   network: 'testnet',
   projectName: 'My Stellar App',
-  autoConnect: true,
+  autoConnect: false,
 });
 
-// Connect to a wallet
-async function connectWallet() {
-  try {
-    const wallet = await walletKit.connect(WalletType.FREIGHTER);
-    console.log('Connected:', wallet.publicKey);
-    
-    // Sign a transaction
-    const tx = buildTransaction(); // Your transaction
-    const signedTx = await wallet.signTransaction(tx);
-    
-    // Submit to network
-    const result = await walletKit.submitTransaction(signedTx);
-    console.log('Transaction hash:', result.hash);
-  } catch (error) {
-    console.error('Connection failed:', error);
-  }
-}
+const wallet = await kit.connect(WalletType.FREIGHTER);
+const unsignedXdr = buildTransactionXdr(); // Build and validate this in your application.
+const signedXdr = await wallet.signTransaction(unsignedXdr);
+const result = await kit.submitTransaction(signedXdr);
+
+console.log('Transaction hash:', result.hash);
 ```
 
-### React
+Wallet operations require a browser with the corresponding extension installed. The kit does not construct transactions, custody keys, or validate that a transaction matches your application's intent. Review network, destination, amount, and fees before requesting a signature.
 
-```tsx
-import { WalletKitProvider, useWallet } from '@nexastellar/wallet-kit/react';
+## Wallet and API reference
 
-// Wrap your app
-function App() {
-  return (
-    <WalletKitProvider
-      network="testnet"
-      projectName="My Stellar App"
-    >
-      <YourApp />
-    </WalletKitProvider>
-  );
-}
+| Adapter | Supported operations |
+|---|---|
+| Freighter | Connect, transaction signing, Soroban auth-entry signing |
+| Albedo | Connect and transaction signing; auth-entry signing is unsupported |
+| Rabet | Connect, transaction signing, Soroban auth-entry signing |
+| xBull | Connect, transaction signing, and provider-dependent auth-entry signing |
+| WalletConnect | Not implemented; reports unavailable |
 
-// Use in components
-function WalletButton() {
-  const {
-    wallet,
-    isConnected,
-    connect,
-    disconnect,
-    signTransaction,
-  } = useWallet();
+`WalletKit` exposes `connect`, `disconnect`, `getWallet`, `isConnected`, `getAvailableWallets`, `isWalletAvailable`, `signTransaction`, `signAuthEntry`, `submitTransaction`, `loadAccount`, `getNetwork`, `getNetworkPassphrase`, `switchNetwork`, `on`, and `off`. See the [API documentation](https://nexastellar.github.io/stellar-wallet-kit/#api) for behavior and limitations.
 
-  if (isConnected) {
-    return (
-      <div>
-        <p>Connected: {wallet.publicKey}</p>
-        <button onClick={disconnect}>Disconnect</button>
-      </div>
-    );
-  }
+The required configuration is `network` (`mainnet` or `testnet`) and `projectName`. Optional settings include `autoConnect`, `projectIcon`, `projectUrl`, `horizonUrl`, `sorobanRpcUrl`, `autoApprove`, and `walletConnectProjectId`. `autoConnect` defaults to `true` and restores a saved wallet type from browser local storage. `autoApprove` and `sorobanRpcUrl` are reserved but currently have no effect; custom Horizon endpoints are used for account loading and transaction submission.
 
-  return (
-    <button onClick={() => connect(WalletType.FREIGHTER)}>
-      Connect Wallet
-    </button>
-  );
-}
-```
+## Development
 
-### With UI Modal
-
-```tsx
-import { WalletModal } from '@nexastellar/wallet-kit/ui';
-
-function ConnectButton() {
-  const [showModal, setShowModal] = useState(false);
-
-  return (
-    <>
-      <button onClick={() => setShowModal(true)}>
-        Connect Wallet
-      </button>
-      
-      <WalletModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        onConnect={(wallet) => {
-          console.log('Connected to:', wallet.type);
-          setShowModal(false);
-        }}
-      />
-    </>
-  );
-}
-```
-
-## 📖 API Reference
-
-### WalletKit
-
-```typescript
-class WalletKit {
-  constructor(config: WalletKitConfig);
-  
-  // Connection
-  connect(type: WalletType): Promise<Wallet>;
-  disconnect(): Promise<void>;
-  
-  // Available wallets
-  getAvailableWallets(): WalletInfo[];
-  isWalletAvailable(type: WalletType): boolean;
-  
-  // Transaction
-  signTransaction(xdr: string): Promise<string>;
-  signAuthEntry(entry: string): Promise<string>;
-  submitTransaction(xdr: string): Promise<SubmitResult>;
-  
-  // Network
-  getNetwork(): NetworkType;
-  switchNetwork(network: NetworkType): Promise<void>;
-  
-  // Events
-  on(event: WalletEvent, callback: Function): void;
-  off(event: WalletEvent, callback: Function): void;
-}
-```
-
-### React Hooks
-
-```typescript
-// useWallet - Main wallet hook
-const {
-  wallet,
-  isConnected,
-  isConnecting,
-  error,
-  connect,
-  disconnect,
-  signTransaction,
-  signAuthEntry,
-} = useWallet();
-
-// useWalletList - Available wallets
-const { wallets, installedWallets } = useWalletList();
-
-// useBalance - Account balance
-const { balance, loading } = useBalance(publicKey);
-
-// useTransaction - Transaction state
-const {
-  submit,
-  isSubmitting,
-  result,
-  error,
-} = useTransaction();
-```
-
-## 🎯 Supported Wallets
-
-| Wallet | Browser Extension | Mobile (WalletConnect) | Mainnet | Testnet |
-|--------|------------------|------------------------|---------|---------|
-| Freighter | ✅ | ❌ | ✅ | ✅ |
-| Albedo | ✅ | ❌ | ✅ | ✅ |
-| Rabet | ✅ | ❌ | ✅ | ✅ |
-| xBull | ✅ | ❌ | ✅ | ✅ |
-| WalletConnect | ❌ | ✅ | ✅ | ✅ |
-
-> **Note:** Direct xBull support connects via the browser extension (`window.xBullSDK`). Mobile xBull users can connect using the WalletConnect option.
-
-## 🔧 Configuration
-
-```typescript
-interface WalletKitConfig {
-  // Network configuration
-  network: 'mainnet' | 'testnet' | NetworkConfig;
-  
-  // App information
-  projectName: string;
-  projectIcon?: string;
-  projectUrl?: string;
-  
-  // Behavior
-  autoConnect?: boolean;
-  autoApprove?: boolean;
-  
-  // WalletConnect (optional)
-  walletConnectProjectId?: string;
-  
-  // Custom RPC endpoints
-  horizonUrl?: string;
-  sorobanRpcUrl?: string;
-}
-```
-
-## 📱 Examples
-
-### Sign and Submit Transaction
-
-```typescript
-import { WalletKit } from '@nexastellar/wallet-kit';
-import {
-  TransactionBuilder,
-  Networks,
-  Operation,
-  Asset,
-} from '@stellar/stellar-sdk';
-
-const walletKit = new WalletKit({ network: 'testnet' });
-await walletKit.connect(WalletType.FREIGHTER);
-
-// Build transaction
-const account = await walletKit.loadAccount();
-const transaction = new TransactionBuilder(account, {
-  fee: '100',
-  networkPassphrase: Networks.TESTNET,
-})
-  .addOperation(
-    Operation.payment({
-      destination: 'GXXX...',
-      asset: Asset.native(),
-      amount: '10',
-    })
-  )
-  .setTimeout(30)
-  .build();
-
-// Sign and submit
-const signedXdr = await walletKit.signTransaction(transaction.toXDR());
-const result = await walletKit.submitTransaction(signedXdr);
-console.log('Success:', result.hash);
-```
-
-### Smart Contract Interaction
-
-```typescript
-import { Contract } from '@stellar/stellar-sdk';
-
-// Initialize contract
-const contract = new Contract('CONTRACT_ID');
-
-// Build transaction
-const tx = await contract.call(
-  'transfer',
-  ...params
-);
-
-// Sign with wallet
-const signedTx = await walletKit.signTransaction(tx.toXDR());
-const result = await walletKit.submitTransaction(signedTx);
-```
-
-### Error Handling
-
-```typescript
-try {
-  await walletKit.connect(WalletType.FREIGHTER);
-} catch (error) {
-  if (error.code === 'WALLET_NOT_INSTALLED') {
-    // Prompt user to install
-    window.open('https://freighter.app', '_blank');
-  } else if (error.code === 'USER_REJECTED') {
-    // User declined connection
-    console.log('Connection rejected');
-  } else {
-    // Other errors
-    console.error('Failed to connect:', error);
-  }
-}
-```
-
-## 🧪 Testing
-
-```typescript
-import { MockWallet } from '@nexastellar/wallet-kit/testing';
-
-// Create mock wallet for tests
-const mockWallet = new MockWallet({
-  publicKey: 'GXXX...',
-  network: 'testnet',
-});
-
-// Use in tests
-test('transaction signing', async () => {
-  const signed = await mockWallet.signTransaction(xdr);
-  expect(signed).toBeDefined();
-});
-```
-
-## 🏗️ Architecture
-
-```
-stellar-wallet-kit/
-├── src/
-│   ├── core/
-│   │   ├── WalletKit.ts          # Main class
-│   │   ├── BaseWallet.ts         # Wallet interface
-│   │   └── types.ts              # Type definitions
-│   ├── wallets/
-│   │   ├── FreighterWallet.ts
-│   │   ├── AlbedoWallet.ts
-│   │   ├── RabetWallet.ts
-│   │   └── WalletConnectWallet.ts
-│   ├── react/
-│   │   ├── Provider.tsx
-│   │   ├── useWallet.ts
-│   │   └── hooks/
-│   ├── ui/
-│   │   ├── Modal.tsx
-│   │   └── WalletButton.tsx
-│   └── utils/
-├── tests/
-└── examples/
-```
-
-## 🤝 Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
-### Development Setup
+Requirements: Node.js 22.13 or newer and npm.
 
 ```bash
-# Clone repository
 git clone https://github.com/NexaStellar/stellar-wallet-kit.git
 cd stellar-wallet-kit
-
-# Install dependencies
-npm install
-
-# Run tests
+npm ci
+npm run lint
+npm run typecheck
 npm test
-
-# Build
 npm run build
-
-# Run examples
-npm run dev
 ```
 
-## 📄 License
+See [CONTRIBUTING.md](CONTRIBUTING.md) for pull request guidance. CI runs lint, type checking, tests, and package builds on Node.js 22 and 24.
 
-MIT License - see [LICENSE](LICENSE) file for details.
+## Project status and links
 
-## 🔗 Links
+This repository is an unaudited prototype, not a production security certification. Provider APIs can change, and a successful signature does not guarantee that Horizon accepts a transaction.
 
 - [Developer documentation](https://nexastellar.github.io/stellar-wallet-kit/)
-- [Examples](https://github.com/NexaStellar/stellar-wallet-kit/tree/main/examples)
-- [NPM Package](https://www.npmjs.com/package/@nexastellar/wallet-kit)
-- [Report Issues](https://github.com/NexaStellar/stellar-wallet-kit/issues)
-
-The documentation site is maintained in [`docs/`](docs/). GitHub Pages must be enabled with **GitHub Actions** as the build and deployment source.
-
-## 🙏 Acknowledgments
-
-Built for the Stellar ecosystem. NexaStellar intends to apply this repository to the Drips Wave program; approval is pending.
-
----
-
-**Maintained by NexaStellar** | [Website](https://nexastellar.dev)
+- [Issues](https://github.com/NexaStellar/stellar-wallet-kit/issues)
+- [npm package](https://www.npmjs.com/package/@nexastellar/wallet-kit)
+- [MIT license](LICENSE)

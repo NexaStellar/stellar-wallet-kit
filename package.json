@@ -1,7 +1,7 @@
 {
   "name": "@nexastellar/wallet-kit",
   "version": "0.1.0",
-  "description": "Modern TypeScript library for integrating Stellar wallets into web applications",
+  "description": "TypeScript wallet adapters for Freighter, Albedo, Rabet, and xBull on Stellar",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -11,21 +11,7 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     },
-    "./react": {
-      "types": "./dist/react/index.d.ts",
-      "import": "./dist/react/index.mjs",
-      "require": "./dist/react/index.js"
-    },
-    "./ui": {
-      "types": "./dist/ui/index.d.ts",
-      "import": "./dist/ui/index.mjs",
-      "require": "./dist/ui/index.js"
-    },
-    "./testing": {
-      "types": "./dist/testing/index.d.ts",
-      "import": "./dist/testing/index.mjs",
-      "require": "./dist/testing/index.js"
-    }
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
@@ -33,13 +19,12 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage",
-    "lint": "eslint src --ext .ts,.tsx",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
@@ -50,13 +35,11 @@
     "freighter",
     "albedo",
     "rabet",
-    "walletconnect",
     "blockchain",
     "crypto",
     "web3",
     "soroban",
-    "typescript",
-    "react"
+    "typescript"
   ],
   "author": "NexaStellar <hello@nexastellar.dev>",
   "license": "MIT",
@@ -68,40 +51,30 @@
     "url": "https://github.com/NexaStellar/stellar-wallet-kit/issues"
   },
   "homepage": "https://github.com/NexaStellar/stellar-wallet-kit#readme",
-  "peerDependencies": {
-    "react": ">=16.8.0",
-    "react-dom": ">=16.8.0"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    },
-    "react-dom": {
-      "optional": true
-    }
-  },
   "dependencies": {
-    "@stellar/stellar-sdk": "^11.3.0",
-    "@walletconnect/sign-client": "^2.10.0"
+    "@stellar/stellar-sdk": "^17.4.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "@types/react": "^18.2.45",
-    "@types/react-dom": "^18.2.18",
-    "@typescript-eslint/eslint-plugin": "^6.15.0",
-    "@typescript-eslint/parser": "^6.15.0",
-    "@vitest/ui": "^4.1.12",
-    "eslint": "^8.56.0",
-    "eslint-config-prettier": "^9.1.0",
+    "@eslint/js": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.29.0",
+    "@typescript-eslint/parser": "^8.29.0",
+    "eslint": "^10.0.0",
     "prettier": "^3.1.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",
     "vite": "^6.4.5",
     "vitest": "^4.1.12"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=22.13.0"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.1"
+    },
+    "eslint": {
+      "minimatch": "^11.0.1"
+    }
   }
 }

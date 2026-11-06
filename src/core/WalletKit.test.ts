@@ -44,6 +44,19 @@ describe('WalletKit - xBull integration', () => {
     vi.restoreAllMocks();
   });
 
+  it('reports the unimplemented WalletConnect adapter as unavailable', async () => {
+    const kit = new WalletKit({
+      network: 'testnet',
+      projectName: 'Test App',
+      autoConnect: false,
+    });
+
+    expect(kit.isWalletAvailable(WalletType.WALLETCONNECT)).toBe(false);
+    await expect(kit.connect(WalletType.WALLETCONNECT)).rejects.toThrow(
+      'wallet is not available',
+    );
+  });
+
   it('can create an xBull adapter for WalletType.XBULL without throwing', () => {
     const kit = new WalletKit({
       network: 'testnet',
