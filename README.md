@@ -203,8 +203,10 @@ const {
 | Freighter | ✅ | ❌ | ✅ | ✅ |
 | Albedo | ✅ | ❌ | ✅ | ✅ |
 | Rabet | ✅ | ❌ | ✅ | ✅ |
-| xBull | ✅ | ✅ | ✅ | ✅ |
+| xBull | ✅ | ❌ | ✅ | ✅ |
 | WalletConnect | ❌ | ✅ | ✅ | ✅ |
+
+> **Note:** Direct xBull support connects via the browser extension (`window.xBullSDK`). Mobile xBull users can connect using the WalletConnect option.
 
 ## 🔧 Configuration
 

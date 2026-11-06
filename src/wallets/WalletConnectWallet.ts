@@ -12,8 +12,8 @@ interface WalletConnectConfig extends WalletConfig {
 }
 
 export class WalletConnectWallet extends BaseWallet {
-  private wcConfig: WalletConnectConfig;
-  private client: any;
+  protected wcConfig: WalletConnectConfig;
+  protected client: any;
 
   constructor(config: WalletConnectConfig) {
     super(config);
@@ -43,11 +43,11 @@ export class WalletConnectWallet extends BaseWallet {
     return 'https://stellar.creit.tech/wallet-icons/walletconnect.svg';
   }
 
-  async signTransaction(xdr: string): Promise<string> {
+  async signTransaction(_xdr: string): Promise<string> {
     throw new Error('WalletConnect implementation pending');
   }
 
-  async signAuthEntry(entry: string): Promise<string> {
+  async signAuthEntry(_entry: string): Promise<string> {
     throw new Error('WalletConnect implementation pending');
   }
 }

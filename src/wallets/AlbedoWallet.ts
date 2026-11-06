@@ -59,7 +59,7 @@ export class AlbedoWallet extends BaseWallet {
     }
   }
 
-  async signAuthEntry(entry: string): Promise<string> {
+  async signAuthEntry(_entry: string): Promise<string> {
     throw new Error('Auth entry signing not supported by Albedo');
   }
 }

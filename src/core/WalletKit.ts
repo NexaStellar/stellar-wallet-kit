@@ -1,8 +1,9 @@
-import { Networks, Server } from '@stellar/stellar-sdk';
+import { Networks, Horizon } from '@stellar/stellar-sdk';
 import { BaseWallet } from './BaseWallet';
 import { FreighterWallet } from '../wallets/FreighterWallet';
 import { AlbedoWallet } from '../wallets/AlbedoWallet';
 import { RabetWallet } from '../wallets/RabetWallet';
+import { XBullWallet } from '../wallets/XBullWallet';
 import { WalletConnectWallet } from '../wallets/WalletConnectWallet';
 import {
   WalletKitConfig,
@@ -17,7 +18,7 @@ export class WalletKit {
   private config: Required<WalletKitConfig>;
   private currentWallet: BaseWallet | null = null;
   private eventListeners: Map<WalletEvent, Set<Function>> = new Map();
-  private server: Server;
+  private server: Horizon.Server;
 
   constructor(config: WalletKitConfig) {
     this.config = {
@@ -32,7 +33,7 @@ export class WalletKit {
       sorobanRpcUrl: config.sorobanRpcUrl || this.getDefaultSorobanUrl(config.network),
     };
 
-    this.server = new Server(this.config.horizonUrl);
+    this.server = new Horizon.Server(this.config.horizonUrl);
 
     if (this.config.autoConnect) {
       this.restoreConnection();
@@ -156,7 +157,7 @@ export class WalletKit {
       
       return {
         hash: result.hash,
-        ledger: result.ledger_attr,
+        ledger: result.ledger,
         success: true,
       };
     } catch (error: any) {
@@ -200,7 +201,7 @@ export class WalletKit {
     this.config.network = network;
     this.config.horizonUrl = this.getDefaultHorizonUrl(network);
     this.config.sorobanRpcUrl = this.getDefaultSorobanUrl(network);
-    this.server = new Server(this.config.horizonUrl);
+    this.server = new Horizon.Server(this.config.horizonUrl);
 
     if (this.currentWallet) {
       await this.currentWallet.disconnect();
@@ -256,6 +257,8 @@ export class WalletKit {
         return new AlbedoWallet(config);
       case WalletType.RABET:
         return new RabetWallet(config);
+      case WalletType.XBULL:
+        return new XBullWallet(config);
       case WalletType.WALLETCONNECT:
         return new WalletConnectWallet({
           ...config,
