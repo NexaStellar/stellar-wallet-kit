@@ -6,7 +6,9 @@
 
 A modern, type-safe TypeScript library for seamlessly integrating Stellar wallets into web applications. Supports Freighter, Albedo, Rabet, and WalletConnect with a unified API.
 
-[📚 Developer documentation](https://nexastellar.github.io/stellar-wallet-kit/)
+## 📚 Documentation
+
+[Visit the Stellar Wallet Kit documentation site](https://nexastellar.github.io/stellar-wallet-kit/).
 
 ## ✨ Features
 
