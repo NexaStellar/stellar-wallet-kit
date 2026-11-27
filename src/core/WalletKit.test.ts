@@ -172,4 +172,28 @@ describe('WalletKit - xBull integration', () => {
     expect(disconnectedSpy).toHaveBeenCalled();
     expect(storage['nexastellar_wallet_type']).toBeUndefined();
   });
+
+  it('keeps wallet operations working when browser storage is blocked', async () => {
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new Error('Storage access denied');
+      },
+    });
+    window.xBullSDK = {
+      connect: vi.fn().mockResolvedValue(true),
+      getPublicKey: vi.fn().mockResolvedValue('GBULLPUBLICKEY1234567890'),
+    };
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const kit = new WalletKit({
+      network: 'testnet',
+      projectName: 'Test App',
+      autoConnect: false,
+    });
+
+    await expect(kit.connect(WalletType.XBULL)).resolves.toBeDefined();
+    await expect(kit.disconnect()).resolves.toBeUndefined();
+    expect(console.warn).toHaveBeenCalled();
+  });
 });
