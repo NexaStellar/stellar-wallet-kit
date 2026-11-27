@@ -57,10 +57,7 @@ export class WalletKit {
     await wallet.connect();
     this.currentWallet = wallet;
 
-    // Save connection preference
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('nexastellar_wallet_type', type);
-    }
+    this.writeWalletPreference(type);
 
     this.emit('connected', wallet);
     return wallet;
@@ -77,9 +74,7 @@ export class WalletKit {
     await this.currentWallet.disconnect();
     this.currentWallet = null;
 
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('nexastellar_wallet_type');
-    }
+    this.writeWalletPreference(null);
 
     this.emit('disconnected');
   }
@@ -283,14 +278,43 @@ export class WalletKit {
       return;
     }
 
-    const savedType = localStorage.getItem('nexastellar_wallet_type') as WalletType;
+    const savedType = this.readWalletPreference() as WalletType | null;
     if (savedType) {
       try {
         await this.connect(savedType);
       } catch (error) {
         console.warn('Failed to restore wallet connection:', error);
-        localStorage.removeItem('nexastellar_wallet_type');
+        this.writeWalletPreference(null);
       }
+    }
+  }
+
+  private readWalletPreference(): string | null {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    try {
+      return window.localStorage.getItem('nexastellar_wallet_type');
+    } catch (error) {
+      console.warn('Unable to read the saved wallet preference:', error);
+      return null;
+    }
+  }
+
+  private writeWalletPreference(type: WalletType | null): void {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      if (type) {
+        window.localStorage.setItem('nexastellar_wallet_type', type);
+      } else {
+        window.localStorage.removeItem('nexastellar_wallet_type');
+      }
+    } catch (error) {
+      console.warn('Unable to update the saved wallet preference:', error);
     }
   }
 

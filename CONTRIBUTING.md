@@ -26,3 +26,7 @@ Use `npm run test:watch` while developing. Do not commit generated `dist/` outpu
 - Confirm all CI checks pass before requesting review.
 
 Wallet integrations handle signing requests. Never include secret keys, seed phrases, or real user credentials in code, fixtures, logs, or issue reports.
+
+See the [Code of Conduct](CODE_OF_CONDUCT.md). Drips Wave tasks are eligible
+only when listed in the active program; follow the maintainer's assignment
+process before starting reward-eligible work.
